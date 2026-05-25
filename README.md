@@ -1,4 +1,4 @@
-# AP Autoshot — Automated Vehicle Catalog Photos
+# AP Autoshoot — Auto vehicle photo shoot
 
 <table>
   <tr>
