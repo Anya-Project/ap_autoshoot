@@ -1,0 +1,12 @@
+[
+  {
+    "spawn_code": "t20",
+    "label": "Progen T20",
+    "resource": "gameplay"
+  },
+  {
+    "spawn_code": "adder",
+    "label": "Grotti Turismo R",
+    "resource": "gameplay"
+  } 
+]
