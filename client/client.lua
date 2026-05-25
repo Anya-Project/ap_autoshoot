@@ -8,6 +8,14 @@ local spawnHeading = Config.StudioLocations[1].spawnHeading
 local camCoords = Config.StudioLocations[1].camCoords
 local camFov = Config.StudioLocations[1].camFov
 
+local function notify(msg)
+    TriggerEvent('chat:addMessage', {
+        color = { 0, 255, 127 },
+        multiline = true,
+        args = { "ap_autoshoot", msg }
+    })
+end
+
 local function selectStudioLocation(index)
     local loc = Config.StudioLocations[index] or Config.StudioLocations[1]
     spawnCoords = loc.spawnCoords
@@ -40,7 +48,7 @@ local function chooseLocationAndProceed(uploadConfig, callback)
             table.insert(chanOptions, { label = "🚗 Showroom Catalog (Main / Default)", value = "default" })
         end
         local result = exports.lation_ui:input({
-            title = '📸 AP Autoshot Setup',
+            title = '📸 AP autoshoot Setup',
             subtitle = 'Configure your automated photoshot preferences',
             submitText = 'Start Photoshoot',
             cancelText = 'Cancel',
@@ -106,35 +114,6 @@ local function chooseLocationAndProceed(uploadConfig, callback)
         return
     end
 
-    local function promptUpscaleChoice()
-        lib.registerContext({
-            id = 'ap_autoshoot_upscale_choice',
-            title = '⚡ HD Upscaling & Pop',
-            menu = 'ap_autoshoot_rembg_choice',
-            options = {
-                {
-                    title = '⚡ Enable Super-Resolution & Pop',
-                    description = 'Upscale to HD (1920px width) and apply realistic paint pop/enhancements.',
-                    icon = 'up-right-and-down-left-from-center',
-                    onSelect = function()
-                        uploadConfig.enable_upscale = true
-                        promptChannelChoice()
-                    end
-                },
-                {
-                    title = '📷 Keep Original Size (Ordinary)',
-                    description = 'No resizing or enhancements. Direct raw upload to Discord if background is also kept.',
-                    icon = 'camera',
-                    onSelect = function()
-                        uploadConfig.enable_upscale = false
-                        promptChannelChoice()
-                    end
-                }
-            }
-        })
-        lib.showContext('ap_autoshoot_upscale_choice')
-    end
-
     local function promptChannelChoice()
         local channels = uploadConfig.channels or {}
         if #channels == 0 then
@@ -162,6 +141,35 @@ local function chooseLocationAndProceed(uploadConfig, callback)
             options = channelOptions
         })
         lib.showContext('ap_autoshoot_channel_choice')
+    end
+
+    local function promptUpscaleChoice()
+        lib.registerContext({
+            id = 'ap_autoshoot_upscale_choice',
+            title = '⚡ HD Upscaling & Pop',
+            menu = 'ap_autoshoot_rembg_choice',
+            options = {
+                {
+                    title = '⚡ Enable Super-Resolution & Pop',
+                    description = 'Upscale to HD (1920px width) and apply realistic paint pop/enhancements.',
+                    icon = 'up-right-and-down-left-from-center',
+                    onSelect = function()
+                        uploadConfig.enable_upscale = true
+                        promptChannelChoice()
+                    end
+                },
+                {
+                    title = '📷 Keep Original Size (Ordinary)',
+                    description = 'No resizing or enhancements. Direct raw upload to Discord if background is also kept.',
+                    icon = 'camera',
+                    onSelect = function()
+                        uploadConfig.enable_upscale = false
+                        promptChannelChoice()
+                    end
+                }
+            }
+        })
+        lib.showContext('ap_autoshoot_upscale_choice')
     end
 
     local function promptBackgroundRemoval()
@@ -309,13 +317,7 @@ local function chooseChannelAndProceed(uploadConfig, callback)
     lib.showContext('ap_autoshoot_resend_channel_choice')
 end
 
-local function notify(msg)
-    TriggerEvent('chat:addMessage', {
-        color = { 0, 255, 127 },
-        multiline = true,
-        args = { "ap_autoshoot", msg }
-    })
-end
+
 
 local function enterStudio()
     isStudioActive = true
@@ -339,10 +341,11 @@ local function enterStudio()
     PointCamAtCoord(cam, spawnCoords.x, spawnCoords.y, spawnCoords.z + 0.5)
     SetCamFov(cam, camFov)
     RenderScriptCams(true, false, 0, true, true)
-    if Config.HideHud then
-        Config.HideHud()
-    else
-        DisplayRadar(false)
+    DisplayRadar(false)
+    TriggerEvent('esx:toggleHud', false)
+    TriggerEvent('qb-hud:client:ToggleHUD', false)
+    if GetResourceState('jg-hud') == 'started' then
+        exports['jg-hud']:toggleHud(false)
     end
 end
 
@@ -353,10 +356,11 @@ local function exitStudio()
         DestroyCam(cam, false)
         cam = nil
     end
-    if Config.ShowHud then
-        Config.ShowHud()
-    else
-        DisplayRadar(true)
+    DisplayRadar(true)
+    TriggerEvent('esx:toggleHud', true)
+    TriggerEvent('qb-hud:client:ToggleHUD', true)
+    if GetResourceState('jg-hud') == 'started' then
+        exports['jg-hud']:toggleHud(true)
     end
 end
 
@@ -831,7 +835,7 @@ RegisterCommand("autoshoot_setup", function()
         notify("❌ Failed to load test vehicle. Proceeding without test vehicle.")
     end
 
-    notify("⚙️ Entered Autoshot Studio Setup Mode!")
+    notify("⚙️ Entered autoshoot Studio Setup Mode!")
     notify("👉 Walk/fly to your desired camera location.")
     notify("👉 Press [G] to toggle Camera Preview.")
     notify("👉 Press [ENTER] to save & exit, [BACKSPACE] to cancel.")
@@ -954,3 +958,4 @@ RegisterCommand("autoshoot_setup", function()
         isPreviewing = false
     end)
 end, false)
+
