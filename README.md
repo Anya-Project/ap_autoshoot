@@ -11,10 +11,10 @@
   </tr>
 </table>
 
-## Prerequisites
+## Dependencies
 - **Python 3.10 or newer** (with pip added to PATH)
-- **screenshot-basic** resource running on your FiveM server.
-
+- **screenshot-basic** 
+- **ox_lib or lation_ui** 
 ---
 
 ## Installation & Setup
