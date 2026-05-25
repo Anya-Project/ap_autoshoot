@@ -108,9 +108,9 @@ local function chooseLocationAndProceed(uploadConfig, callback)
 
     local function promptUpscaleChoice()
         lib.registerContext({
-            id = 'ap_autoshot_upscale_choice',
+            id = 'ap_autoshoot_upscale_choice',
             title = '⚡ HD Upscaling & Pop',
-            menu = 'ap_autoshot_rembg_choice',
+            menu = 'ap_autoshoot_rembg_choice',
             options = {
                 {
                     title = '⚡ Enable Super-Resolution & Pop',
@@ -132,7 +132,7 @@ local function chooseLocationAndProceed(uploadConfig, callback)
                 }
             }
         })
-        lib.showContext('ap_autoshot_upscale_choice')
+        lib.showContext('ap_autoshoot_upscale_choice')
     end
 
     local function promptChannelChoice()
@@ -156,19 +156,19 @@ local function chooseLocationAndProceed(uploadConfig, callback)
         end
 
         lib.registerContext({
-            id = 'ap_autoshot_channel_choice',
+            id = 'ap_autoshoot_channel_choice',
             title = '📂 Select Catalog Channel',
-            menu = 'ap_autoshot_upscale_choice',
+            menu = 'ap_autoshoot_upscale_choice',
             options = channelOptions
         })
-        lib.showContext('ap_autoshot_channel_choice')
+        lib.showContext('ap_autoshoot_channel_choice')
     end
 
     local function promptBackgroundRemoval()
         lib.registerContext({
-            id = 'ap_autoshot_rembg_choice',
+            id = 'ap_autoshoot_rembg_choice',
             title = '✂️ Background Removal',
-            menu = 'ap_autoshot_location_choice',
+            menu = 'ap_autoshoot_location_choice',
             options = {
                 {
                     title = '✨ Enable AI Background Removal',
@@ -190,7 +190,7 @@ local function chooseLocationAndProceed(uploadConfig, callback)
                 }
             }
         })
-        lib.showContext('ap_autoshot_rembg_choice')
+        lib.showContext('ap_autoshoot_rembg_choice')
     end
 
     local options = {}
@@ -217,13 +217,13 @@ local function chooseLocationAndProceed(uploadConfig, callback)
     })
 
     lib.registerContext({
-        id = 'ap_autoshot_location_choice',
+        id = 'ap_autoshoot_location_choice',
         title = '📸 Select Studio Location',
         menu = nil,
         options = options
     })
     
-    lib.showContext('ap_autoshot_location_choice')
+    lib.showContext('ap_autoshoot_location_choice')
 end
 
 local function chooseChannelAndProceed(uploadConfig, callback)
@@ -301,19 +301,19 @@ local function chooseChannelAndProceed(uploadConfig, callback)
     end
 
     lib.registerContext({
-        id = 'ap_autoshot_resend_channel_choice',
+        id = 'ap_autoshoot_resend_channel_choice',
         title = '📂 Select Channel to Resend',
-        menu = 'ap_autoshot_single_choice', 
+        menu = 'ap_autoshoot_single_choice', 
         options = channelOptions
     })
-    lib.showContext('ap_autoshot_resend_channel_choice')
+    lib.showContext('ap_autoshoot_resend_channel_choice')
 end
 
 local function notify(msg)
     TriggerEvent('chat:addMessage', {
         color = { 0, 255, 127 },
         multiline = true,
-        args = { "ap_autoshot", msg }
+        args = { "ap_autoshoot", msg }
     })
 end
 
@@ -339,11 +339,10 @@ local function enterStudio()
     PointCamAtCoord(cam, spawnCoords.x, spawnCoords.y, spawnCoords.z + 0.5)
     SetCamFov(cam, camFov)
     RenderScriptCams(true, false, 0, true, true)
-    DisplayRadar(false)
-    TriggerEvent('esx:toggleHud', false)
-    TriggerEvent('qb-hud:client:ToggleHUD', false)
-    if GetResourceState('jg-hud') == 'started' then
-        exports['jg-hud']:toggleHud(false)
+    if Config.HideHud then
+        Config.HideHud()
+    else
+        DisplayRadar(false)
     end
 end
 
@@ -354,18 +353,17 @@ local function exitStudio()
         DestroyCam(cam, false)
         cam = nil
     end
-    DisplayRadar(true)
-    TriggerEvent('esx:toggleHud', true)
-    TriggerEvent('qb-hud:client:ToggleHUD', true)
-    if GetResourceState('jg-hud') == 'started' then
-        exports['jg-hud']:toggleHud(true)
+    if Config.ShowHud then
+        Config.ShowHud()
+    else
+        DisplayRadar(true)
     end
 end
 
 local function spawnAndCleanVehicle(modelName)
     local modelHash = GetHashKey(modelName)
     if not IsModelInCdimage(modelHash) or not IsModelAVehicle(modelHash) then
-        print(("[ap_autoshot] Error: Invalid vehicle model: %s"):format(modelName))
+        print(("[ap_autoshoot] Error: Invalid vehicle model: %s"):format(modelName))
         return nil
     end
     
@@ -377,7 +375,7 @@ local function spawnAndCleanVehicle(modelName)
     end
     
     if not HasModelLoaded(modelHash) then
-        print(("[ap_autoshot] Error: Failed to load model: %s"):format(modelName))
+        print(("[ap_autoshoot] Error: Failed to load model: %s"):format(modelName))
         return nil
     end
     
@@ -431,7 +429,7 @@ local function parseImageUrl(data)
     return nil, "NO_URL_FOUND"
 end
 
-RegisterCommand("autoshot_cancel", function()
+RegisterCommand("autoshoot_cancel", function()
     if isRunning then
         isRunning = false
         notify("❌ Automated photoshot cancelled!")
@@ -486,7 +484,7 @@ local function startBatchProcess(vehicles, uploadConfig, history, batchMode)
                 processed = true
             elseif batchMode == "resend" then
                 notify(("[✉️ %d/%d] Resending existing photo: ^3%s"):format(idx, #vehicles, modelName))
-                TriggerServerEvent("ap_autoshot:resendOldPhoto", modelName, uploadConfig.chosenWebhook)
+                TriggerServerEvent("ap_autoshoot:resendOldPhoto", modelName, uploadConfig.chosenWebhook)
                 successCount = successCount + 1
                 Wait(500)
                 processed = true
@@ -522,9 +520,9 @@ local function startBatchProcess(vehicles, uploadConfig, history, batchMode)
                 if url then
                     local needsPython = uploadConfig.use_rembg and (uploadConfig.remove_bg or uploadConfig.enable_upscale)
                     if needsPython then
-                        TriggerServerEvent("ap_autoshot:processRembgAndLog", modelName, label, url, uploadConfig.chosenWebhook, uploadConfig.remove_bg, uploadConfig.enable_upscale)
+                        TriggerServerEvent("ap_autoshoot:processRembgAndLog", modelName, label, url, uploadConfig.chosenWebhook, uploadConfig.remove_bg, uploadConfig.enable_upscale)
                     else
-                        TriggerServerEvent("ap_autoshot:sendDiscordLog", modelName, label, url, uploadConfig.chosenWebhook)
+                        TriggerServerEvent("ap_autoshoot:sendDiscordLog", modelName, label, url, uploadConfig.chosenWebhook)
                     end
                     successCount = successCount + 1
                 else
@@ -581,9 +579,9 @@ local function startBatchProcess(vehicles, uploadConfig, history, batchMode)
     notify("🚪 Exited photo studio.")
 end
 
-RegisterNetEvent("ap_autoshot:startBatch", function(vehiclesList, uploadConfig, historyList)
+RegisterNetEvent("ap_autoshoot:startBatch", function(vehiclesList, uploadConfig, historyList)
     if isRunning then
-        notify("⚠️ Photoshot is already running! Use /autoshot_cancel to stop it.")
+        notify("⚠️ Photoshot is already running! Use /autoshoot_cancel to stop it.")
         return
     end
     
@@ -611,7 +609,7 @@ RegisterNetEvent("ap_autoshot:startBatch", function(vehiclesList, uploadConfig, 
         end
 
         lib.registerContext({
-            id = 'ap_autoshot_batch_choice',
+            id = 'ap_autoshoot_batch_choice',
             title = '⚠️ Already Photographed Vehicles',
             menu = nil,
             options = {
@@ -620,7 +618,7 @@ RegisterNetEvent("ap_autoshot:startBatch", function(vehiclesList, uploadConfig, 
                     description = ('Skip all %d already-photographed vehicles. Highly recommended to save your upload quota!'):format(photographedCount),
                     icon = 'shield-halved',
                     arrow = true,
-                    event = 'ap_autoshot:handleBatchChoice',
+                    event = 'ap_autoshoot:handleBatchChoice',
                     args = { action = 'skip', vehicles = vehicles, config = uploadConfig, history = history }
                 },
                 {
@@ -628,7 +626,7 @@ RegisterNetEvent("ap_autoshot:startBatch", function(vehiclesList, uploadConfig, 
                     description = ('Instantly send existing image URLs for the %d vehicles to Discord without uploading again.'):format(photographedCount),
                     icon = 'envelope',
                     arrow = true,
-                    event = 'ap_autoshot:handleBatchChoice',
+                    event = 'ap_autoshoot:handleBatchChoice',
                     args = { action = 'resend', vehicles = vehicles, config = uploadConfig, history = history }
                 },
                 {
@@ -636,24 +634,24 @@ RegisterNetEvent("ap_autoshot:startBatch", function(vehiclesList, uploadConfig, 
                     description = 'Photograph and upload all vehicles again, overwriting any existing history entries.',
                     icon = 'camera',
                     arrow = true,
-                    event = 'ap_autoshot:handleBatchChoice',
+                    event = 'ap_autoshoot:handleBatchChoice',
                     args = { action = 'rephotograph', vehicles = vehicles, config = uploadConfig, history = history }
                 },
                 {
                     title = '❌ Cancel Process',
                     description = 'Cancel the automated photoshot process completely.',
                     icon = 'xmark',
-                    event = 'ap_autoshot:handleBatchChoice',
+                    event = 'ap_autoshoot:handleBatchChoice',
                     args = { action = 'cancel' }
                 }
             }
         })
         
-        lib.showContext('ap_autoshot_batch_choice')
+        lib.showContext('ap_autoshoot_batch_choice')
     end)
 end)
 
-RegisterNetEvent("ap_autoshot:handleBatchChoice", function(args)
+RegisterNetEvent("ap_autoshoot:handleBatchChoice", function(args)
     if args.action == 'cancel' then
         notify("❌ Photoshot cancelled!")
         return
@@ -661,9 +659,9 @@ RegisterNetEvent("ap_autoshot:handleBatchChoice", function(args)
     startBatchProcess(args.vehicles, args.config, args.history, args.action)
 end)
 
-RegisterNetEvent("ap_autoshot:startSingle", function(modelName, uploadConfig)
+RegisterNetEvent("ap_autoshoot:startSingle", function(modelName, uploadConfig)
     if isRunning then
-        notify("⚠️ Photoshot is already running! Use /autoshot_cancel to stop it.")
+        notify("⚠️ Photoshot is already running! Use /autoshoot_cancel to stop it.")
         return
     end
 
@@ -699,10 +697,10 @@ RegisterNetEvent("ap_autoshot:startSingle", function(modelName, uploadConfig)
             if url then
                 local needsPython = uploadConfig.use_rembg and (uploadConfig.remove_bg or uploadConfig.enable_upscale)
                 if needsPython then
-                    TriggerServerEvent("ap_autoshot:processRembgAndLog", modelName, modelName, url, uploadConfig.chosenWebhook, uploadConfig.remove_bg, uploadConfig.enable_upscale)
+                    TriggerServerEvent("ap_autoshoot:processRembgAndLog", modelName, modelName, url, uploadConfig.chosenWebhook, uploadConfig.remove_bg, uploadConfig.enable_upscale)
                     notify("✔️ Photo captured! AI background removal/enhancement in progress...")
                 else
-                    TriggerServerEvent("ap_autoshot:sendDiscordLog", modelName, modelName, url, uploadConfig.chosenWebhook)
+                    TriggerServerEvent("ap_autoshoot:sendDiscordLog", modelName, modelName, url, uploadConfig.chosenWebhook)
                     notify("✔️ Photo captured and sent to Discord successfully!")
                 end
             else
@@ -723,12 +721,12 @@ RegisterNetEvent("ap_autoshot:startSingle", function(modelName, uploadConfig)
     end)
 end)
 
-RegisterNetEvent("ap_autoshot:startSingleChecked", function(modelName, uploadConfig, existingEntry)
+RegisterNetEvent("ap_autoshoot:startSingleChecked", function(modelName, uploadConfig, existingEntry)
     local hasOxLib = GetResourceState('ox_lib') == 'started'
     
     if hasOxLib then
         lib.registerContext({
-            id = 'ap_autoshot_single_choice',
+            id = 'ap_autoshoot_single_choice',
             title = '⚠️ Already Photographed',
             menu = nil,
             options = {
@@ -737,7 +735,7 @@ RegisterNetEvent("ap_autoshot:startSingleChecked", function(modelName, uploadCon
                     description = ('Spawn the vehicle, capture a new screenshot, and upload to %s.'):format(uploadConfig.type == 'fivemanage' and 'FiveManage' or 'Discord'),
                     icon = 'camera',
                     arrow = true,
-                    event = 'ap_autoshot:handleSingleChoice',
+                    event = 'ap_autoshoot:handleSingleChoice',
                     args = { action = 'rephotograph', model = modelName, config = uploadConfig }
                 },
                 {
@@ -745,32 +743,32 @@ RegisterNetEvent("ap_autoshot:startSingleChecked", function(modelName, uploadCon
                     description = 'Instantly send the existing image URL to Discord without uploading again.',
                     icon = 'envelope',
                     arrow = true,
-                    event = 'ap_autoshot:handleSingleChoice',
+                    event = 'ap_autoshoot:handleSingleChoice',
                     args = { action = 'resend', model = modelName, config = uploadConfig }
                 },
                 {
                     title = '❌ Cancel',
                     description = 'Cancel the action and exit the photo studio.',
                     icon = 'xmark',
-                    event = 'ap_autoshot:handleSingleChoice',
+                    event = 'ap_autoshoot:handleSingleChoice',
                     args = { action = 'cancel' }
                 }
             }
         })
         
-        lib.showContext('ap_autoshot_single_choice')
+        lib.showContext('ap_autoshoot_single_choice')
     else
-        TriggerEvent("ap_autoshot:startSingle", modelName, uploadConfig)
+        TriggerEvent("ap_autoshoot:startSingle", modelName, uploadConfig)
     end
 end)
 
-RegisterNetEvent("ap_autoshot:handleSingleChoice", function(args)
+RegisterNetEvent("ap_autoshoot:handleSingleChoice", function(args)
     if args.action == 'rephotograph' then
-        TriggerEvent("ap_autoshot:startSingle", args.model, args.config)
+        TriggerEvent("ap_autoshoot:startSingle", args.model, args.config)
     elseif args.action == 'resend' then
         chooseChannelAndProceed(args.config, function()
             notify("✉️ Resending existing photo to Discord...")
-            TriggerServerEvent("ap_autoshot:resendOldPhoto", args.model, args.config and args.config.chosenWebhook)
+            TriggerServerEvent("ap_autoshoot:resendOldPhoto", args.model, args.config and args.config.chosenWebhook)
         end)
     else
         notify("❌ Action cancelled.")
@@ -795,7 +793,7 @@ local function drawSetupTxt(text, x, y, scale, r, g, b)
     DrawText(x, y)
 end
 
-RegisterCommand("autoshot_setup", function()
+RegisterCommand("autoshoot_setup", function()
     if setupMode then
         notify("⚠️ Already in setup mode!")
         return
@@ -928,7 +926,7 @@ RegisterCommand("autoshot_setup", function()
                 TriggerEvent('chat:addMessage', {
                     color = { 0, 255, 127 },
                     multiline = true,
-                    args = { "ap_autoshot", "^2Coordinates saved! Press F8 to copy them." }
+                    args = { "ap_autoshoot", "^2Coordinates saved! Press F8 to copy them." }
                 })
                 
                 notify("💾 Coordinates have been printed to your F8 Console!")

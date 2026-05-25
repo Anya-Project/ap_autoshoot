@@ -1,15 +1,15 @@
 Config = {}
 
 -- Access Control
-Config.RequireAcePermission = true -- Restrict command to players with ace permission "command.autoshot" or "admin"
+Config.RequireAcePermission = true -- Restrict command to players with ace permission "command.autoshoot" or "admin"
 
 -- Webhook & Image Uploads
-Config.RawUploads = "" -- Discord webhook for initial raw uploads (if not using FiveManage)
-Config.FiveManageToken = "74plXus0HkxLfr37jntk2ewhVoAtTCYp" -- Optional FiveManage token
+Config.FiveManageToken = "" --  FiveManage token
+Config.RawUploads = "" -- Discord webhook for initial raw uploads (if not using FiveManage) (leave empty if not using)
 
 -- Background Removal & Upscaling (rembg server)
 Config.UseRembg = true -- Route through python server for upscaling/background removal
-Config.RemoveBackground = false -- Set to false to keep in-game background (e.g. custom showroom)
+Config.RemoveBackground = false -- Set to false to keep in-game background
 Config.EnableUpscale = true -- Upscale photo to HD
 Config.RembgUrl = "http://localhost:5000/process"
 
@@ -17,30 +17,30 @@ Config.RembgUrl = "http://localhost:5000/process"
 Config.Channels = {
     {
         name = "💎 VIP/Import Vehicles DB Log",
-        webhook = "https://discord.com/api/webhooks/1506467206991581196/4Z1dL6E6hf73SzyWugaJ3h-gWQsO5gUS-OoMlMCLEE_fMhVj_j3wqz--HrJRAYpVKUZX"
+        webhook = ""
     },
     {
         name = "💎 Default Vehicles DB Log",
-        webhook = "https://discord.com/api/webhooks/1506178169731026964/0p9znCu0iwdv1repeF-pDtbnuuy3qt7Q6yLJ9KbeQWMR4g0Z1my_Gj5xRxBwceGugW-O"
+        webhook = ""
     }
 }
 
 -- Studio Coordinates
-Config.StudioLocations = {
+Config.StudioLocations = { -- USE /AUTOSHOOT_SETUP TO SETUP NEW COORDINATES
     {
         name = "Car Studio (Angle A - Default)",
-        spawnCoords = vector3(1225.818115, -3249.016846, 5.113791),
-        spawnHeading = 146.90,
-        camCoords = vector3(1225.691406, -3256.219971, 6.147595),
-        camFov = 38.8
+        spawnCoords = vector3(-1827.206909, -3156.032715, 13.522194),
+        spawnHeading = 24.57,
+        camCoords = vector3(-1826.765747, -3149.702881, 13.944359),
+        camFov = 40.0
     },
-    {
-        name = "Car Studio (Angle B - New)",
-        spawnCoords = vector3(1225.810425, -3268.059326, 5.113844),
-        spawnHeading = 315.75,
-        camCoords = vector3(1226.194580, -3261.885254, 5.887596),
-        camFov = 36.2
-    }
+    -- { -- EXAMPLE
+    --    name = "Car Studio (Angle B - New)",
+    --    spawnCoords = vector3(1225.810425, -3268.059326, 5.113844),
+    --    spawnHeading = 315.75,
+    --    camCoords = vector3(1226.194580, -3261.885254, 5.887596),
+    --    camFov = 36.2
+    -- }
 }
 
 -- Vehicle Colors
@@ -60,3 +60,26 @@ Config.PremiumColors = {
     { r = 137, g = 137, p = 111 }, -- Metallic Hot Pink
     { r = 145, g = 145, p = 111 }, -- Metallic Bright Purple
 }
+
+-- Custom HUD Toggles
+-- Customize how the HUD is hidden/shown on your server during photoshoots.
+Config.HideHud = function()
+    DisplayRadar(false)
+    TriggerEvent('esx:toggleHud', false)
+    TriggerEvent('qb-hud:client:ToggleHUD', false)
+    if GetResourceState('jg-hud') == 'started' then
+        exports['jg-hud']:toggleHud(false)
+    end
+    -- Add your custom HUD hiding exports/events here
+end
+
+Config.ShowHud = function()
+    DisplayRadar(true)
+    TriggerEvent('esx:toggleHud', true)
+    TriggerEvent('qb-hud:client:ToggleHUD', true)
+    if GetResourceState('jg-hud') == 'started' then
+        exports['jg-hud']:toggleHud(true)
+    end
+    -- Add your custom HUD showing exports/events here
+end
+

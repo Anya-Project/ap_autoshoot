@@ -1,5 +1,16 @@
 # AP Autoshot — Automated Vehicle Catalog Photos
 
+<table>
+  <tr>
+    <td><b>Menu Setup</b></td>
+    <td><b>Discord Log</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://i.imgur.com/MmSEmsO.png" alt="Contoh Menu" width="400"/></td>
+    <td><img src="https://i.imgur.com/BZmnoBe.png" alt="Contoh Log Discord" width="400"/></td>
+  </tr>
+</table>
+
 ## Prerequisites
 - **Python 3.10 or newer** (with pip added to PATH)
 - **screenshot-basic** resource running on your FiveM server.
@@ -18,7 +29,7 @@ pip install flask flask-cors rembg pillow requests
 ---
 
 ### Step 2: Start the Rembg Server
-1. Open a terminal inside the resource directory (`ap_autoshot`).
+1. Open a terminal inside the resource directory (`ap_autoshoot`).
 2. Run the flask proxy server:
    ```bash
    python python/rembg_server.py
@@ -39,31 +50,31 @@ Adjust the configurations inside `config.lua`:
 ### Step 4: Start Resource
 Add the following to your `server.cfg`:
 ```cfg
-ensure ap_autoshot
+ensure ap_autoshoot
 ```
 
 ---
 
 ## Commands & Usage
 
-### 1. `/autoshot`
+### 1. `/autoshoot`
 Starts a batch photoshoot for all vehicles inside `data/vehicles_list.json`.
-1. Run `/autoshot` in-game.
+1. Run `/autoshoot` in-game.
 2. Select your studio location and camera angle.
 3. Configure AI background removal and destination Discord channel.
 4. Confirm to start the batch photoshoot.
 
-### 2. `/autoshot_single [spawn_code]`
+### 2. `/autoshoot_single [spawn_code]`
 Performs a photoshoot for a single vehicle.
-- Example: `/autoshot_single t20`
+- Example: `/autoshoot_single t20`
 
-### 3. `/autoshot_cancel`
+### 3. `/autoshoot_cancel`
 Cancels an active batch photoshoot process.
 
-### 4. `/autoshot_setup`
+### 4. `/autoshoot_setup`
 Utility command to setup coordinates and camera angles.
 1. Park a vehicle at the desired location.
-2. Run `/autoshot_setup` to spawn a test vehicle.
+2. Run `/autoshoot_setup` to spawn a test vehicle.
 3. Move your character to your preferred camera viewpoint.
 4. Press **[G]** to toggle camera preview.
 5. Use Arrow Keys to adjust:

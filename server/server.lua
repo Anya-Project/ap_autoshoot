@@ -1,4 +1,4 @@
-RegisterNetEvent("ap_autoshot:processRembgAndLog", function(spawnCode, label, rawImageUrl, chosenWebhook, removeBg, enableUpscale)
+RegisterNetEvent("ap_autoshoot:processRembgAndLog", function(spawnCode, label, rawImageUrl, chosenWebhook, removeBg, enableUpscale)
     local uploadConfig = {}
     if Config.FiveManageToken and Config.FiveManageToken ~= "" and not string.find(Config.FiveManageToken, "YOUR_") then
         uploadConfig = {
@@ -36,34 +36,34 @@ RegisterNetEvent("ap_autoshot:processRembgAndLog", function(spawnCode, label, ra
 
     PerformHttpRequest(Config.RembgUrl, function(statusCode, responseText, headers)
         if statusCode ~= 200 then
-            print("^1[ap_autoshot] Rembg error: " .. statusCode .. "^7")
+            print("^1[ap_autoshoot] Rembg error: " .. statusCode .. "^7")
             return
         end
 
         local ok, resp = pcall(json.decode, responseText)
         if not ok or not resp then
-            print("^1[ap_autoshot] Rembg returned invalid JSON^7")
+            print("^1[ap_autoshoot] Rembg returned invalid JSON^7")
             return
         end
 
         local processedUrl = resp.url
         if not processedUrl then
-            print("^1[ap_autoshot] Rembg did not return a URL^7")
+            print("^1[ap_autoshoot] Rembg did not return a URL^7")
             return
         end
 
         print("Rembg processed URL for: " .. spawnCode)
-        TriggerEvent("ap_autoshot:sendDiscordLog", spawnCode, label, processedUrl, chosenWebhook)
+        TriggerEvent("ap_autoshoot:sendDiscordLog", spawnCode, label, processedUrl, chosenWebhook)
     end, "POST", bodyJson, { ["Content-Type"] = "application/json" })
 end)
 
-RegisterCommand("autoshot", function(source, args, rawCommand)
+RegisterCommand("autoshoot", function(source, args, rawCommand)
     if source > 0 then
         if Config.RequireAcePermission then
-            if not (IsPlayerAceAllowed(source, "command.autoshot") or IsPlayerAceAllowed(source, "admin")) then
+            if not (IsPlayerAceAllowed(source, "command.autoshoot") or IsPlayerAceAllowed(source, "admin")) then
                 TriggerClientEvent('chat:addMessage', source, {
                     color = { 255, 0, 0 },
-                    args = { "ap_autoshot", "❌ You do not have permission to use this command!" }
+                    args = { "ap_autoshoot", "❌ You do not have permission to use this command!" }
                 })
                 return
             end
@@ -72,16 +72,16 @@ RegisterCommand("autoshot", function(source, args, rawCommand)
             and (not Config.FiveManageToken or Config.FiveManageToken == "") then
             TriggerClientEvent('chat:addMessage', source, {
                 color = { 255, 0, 0 },
-                args = { "ap_autoshot", "❌ Error: No webhook channel configured!" }
+                args = { "ap_autoshoot", "❌ Error: No webhook channel configured!" }
             })
             return
         end
         local fileContent = LoadResourceFile(GetCurrentResourceName(), "data/vehicles_list.json")
         if not fileContent then
-            print("^1[ap_autoshot] Error: Failed to read vehicles_list.json^7")
+            print("^1[ap_autoshoot] Error: Failed to read vehicles_list.json^7")
             TriggerClientEvent('chat:addMessage', source, {
                 color = { 255, 0, 0 },
-                args = { "ap_autoshot", "❌ Error: Failed to load vehicles_list.json!" }
+                args = { "ap_autoshoot", "❌ Error: Failed to load vehicles_list.json!" }
             })
             return
         end
@@ -89,7 +89,7 @@ RegisterCommand("autoshot", function(source, args, rawCommand)
         if not vehicles or #vehicles == 0 then
             TriggerClientEvent('chat:addMessage', source, {
                 color = { 255, 0, 0 },
-                args = { "ap_autoshot", "❌ Error: Vehicle list is empty!" }
+                args = { "ap_autoshoot", "❌ Error: Vehicle list is empty!" }
             })
             return
         end
@@ -121,20 +121,20 @@ RegisterCommand("autoshot", function(source, args, rawCommand)
             history = json.decode(historyContent) or {}
         end
         
-        print("Starting autoshot command for " .. #vehicles .. " vehicles")
-        TriggerClientEvent("ap_autoshot:startBatch", source, vehicles, uploadConfig, history)
+        print("Starting autoshoot command for " .. #vehicles .. " vehicles")
+        TriggerClientEvent("ap_autoshoot:startBatch", source, vehicles, uploadConfig, history)
     else
-        print("[ap_autoshot] This command must be executed by a player in-game.")
+        print("[ap_autoshoot] This command must be executed by a player in-game.")
     end
 end, false)
 
-RegisterCommand("autoshot_single", function(source, args, rawCommand)
+RegisterCommand("autoshoot_single", function(source, args, rawCommand)
     if source > 0 then
         if Config.RequireAcePermission then
-            if not (IsPlayerAceAllowed(source, "command.autoshot") or IsPlayerAceAllowed(source, "admin")) then
+            if not (IsPlayerAceAllowed(source, "command.autoshoot") or IsPlayerAceAllowed(source, "admin")) then
                 TriggerClientEvent('chat:addMessage', source, {
                     color = { 255, 0, 0 },
-                    args = { "ap_autoshot", "❌ You do not have permission to use this command!" }
+                    args = { "ap_autoshoot", "❌ You do not have permission to use this command!" }
                 })
                 return
             end
@@ -144,7 +144,7 @@ RegisterCommand("autoshot_single", function(source, args, rawCommand)
         if not modelName then
             TriggerClientEvent('chat:addMessage', source, {
                 color = { 255, 127, 0 },
-                args = { "ap_autoshot", "Invalid syntax! Use: /autoshot_single [spawn_code]" }
+                args = { "ap_autoshoot", "Invalid syntax! Use: /autoshoot_single [spawn_code]" }
             })
             return
         end
@@ -176,17 +176,17 @@ RegisterCommand("autoshot_single", function(source, args, rawCommand)
             history = json.decode(historyContent) or {}
         end
         
-        print("Starting autoshot_single command for: " .. tostring(modelName))
+        print("Starting autoshoot_single command for: " .. tostring(modelName))
         local existing = history[modelName:lower()]
         if existing then
-            TriggerClientEvent("ap_autoshot:startSingleChecked", source, modelName, uploadConfig, existing)
+            TriggerClientEvent("ap_autoshoot:startSingleChecked", source, modelName, uploadConfig, existing)
         else
-            TriggerClientEvent("ap_autoshot:startSingle", source, modelName, uploadConfig)
+            TriggerClientEvent("ap_autoshoot:startSingle", source, modelName, uploadConfig)
         end
     end
 end, false)
 
-RegisterNetEvent("ap_autoshot:sendDiscordLog", function(spawnCode, label, imageUrl, chosenWebhook)
+RegisterNetEvent("ap_autoshoot:sendDiscordLog", function(spawnCode, label, imageUrl, chosenWebhook)
     local resourceName = "unknown"
     local fileContent = LoadResourceFile(GetCurrentResourceName(), "data/vehicles_list.json")
     if fileContent then
@@ -242,7 +242,7 @@ RegisterNetEvent("ap_autoshot:sendDiscordLog", function(spawnCode, label, imageU
     end
     PerformHttpRequest(finalWebhook, function(statusCode, response, headers)
         if statusCode ~= 200 and statusCode ~= 204 then
-            print("^1[ap_autoshot] Discord webhook error status: " .. tostring(statusCode) .. "^7")
+            print("^1[ap_autoshoot] Discord webhook error status: " .. tostring(statusCode) .. "^7")
         end
     end, 'POST', json.encode({ 
         content = ("🚘 **%s** | Spawn Code: `%s` | Resource: `%s`"):format(label, spawnCode, resourceName),
@@ -265,16 +265,16 @@ RegisterNetEvent("ap_autoshot:sendDiscordLog", function(spawnCode, label, imageU
     SaveResourceFile(GetCurrentResourceName(), "data/photographed_history.json", json.encode(history, {indent=true}), -1)
 end)
 
-RegisterNetEvent("ap_autoshot:resendOldPhoto", function(spawnCode, chosenWebhook)
+RegisterNetEvent("ap_autoshoot:resendOldPhoto", function(spawnCode, chosenWebhook)
     local historyContent = LoadResourceFile(GetCurrentResourceName(), "data/photographed_history.json")
     if historyContent then
         local history = json.decode(historyContent) or {}
         local entry = history[spawnCode:lower()]
         if entry then
             print("Resending existing photo for: " .. spawnCode)
-            TriggerEvent("ap_autoshot:sendDiscordLog", entry.spawn_code, entry.label, entry.image_url, chosenWebhook)
+            TriggerEvent("ap_autoshoot:sendDiscordLog", entry.spawn_code, entry.label, entry.image_url, chosenWebhook)
         else
-            print("^1[ap_autoshot] Cannot resend, spawn code not found in history: " .. spawnCode .. "^7")
+            print("^1[ap_autoshoot] Cannot resend, spawn code not found in history: " .. spawnCode .. "^7")
         end
     end
 end)
@@ -298,7 +298,7 @@ AddEventHandler('onResourceStart', function(resourceName)
             
             PerformHttpRequest(healthUrl, function(statusCode, responseText, headers)
                 if statusCode == 200 then
-                    print("^2[ap_autoshot] SUCCESS: Rembg Python Server is RUNNING and HEALTHY!^7")
+                    print("^2[ap_autoshoot] SUCCESS: Rembg Python Server is RUNNING and HEALTHY!^7")
                 else
                     print("^1┌────────────────────────────────────────────────────────┐^7")
                     print("^1│  WARNING: REMBG PYTHON SERVER IS NOT RUNNING!          │^7")
@@ -315,7 +315,7 @@ AddEventHandler('onResourceStart', function(resourceName)
                 end
             end, "GET", "")
         else
-            print("^3[ap_autoshot] NOTE: Rembg Python Server check skipped (disabled in config.lua)^7")
+            print("^3[ap_autoshoot] NOTE: Rembg Python Server check skipped (disabled in config.lua)^7")
         end
     end
 end)
